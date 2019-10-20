@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, Modal, Button } from 'react-native';
+import { StyleSheet, View, Text, TextInput, Modal, Button, ImageBackground } from 'react-native';
+import { BlurView } from 'expo-blur';
 
 import { HORIZONTAL_GAP, VERTICAL_GAP } from "./src/constats";
 
@@ -12,11 +13,17 @@ const App = () => {
     const handleChangeText = value => setText(value);
 
     return (
-        <View style={styles.container}>
-            <View style={styles.content} >
-                <ConnectionController />
-            </View>
-        </View>
+        <ImageBackground
+            style={ styles.background }
+            resizeMode='cover'
+            source={require('./wall-murals-shiba-inu-dog.jpg')}
+        >
+            <BlurView tint='light' intensity={50} style={styles.container}>
+                <View style={styles.content} >
+                    <ConnectionController />
+                </View>
+            </BlurView>
+        </ImageBackground>
     );
 };
 
@@ -27,10 +34,11 @@ const styles = StyleSheet.create({
         paddingVertical: VERTICAL_GAP,
         backgroundColor: 'pink',
     },
-    content: {
-        flex: 6,
-        backgroundColor: 'green',
-    },
+    background: {
+        width: '100%',
+        height: '100%',
+        flex: 1
+    }
 });
 
 export default App;

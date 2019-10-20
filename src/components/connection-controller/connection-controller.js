@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { StyleSheet, TouchableOpacity, Text, TextInput, Modal, Button, View, Animated, Easing, Dimensions, Image } from 'react-native';
+import { StyleSheet, TouchableOpacity, Text, View, Animated, Easing, ImageBackground } from 'react-native';
+import { BlurView } from 'expo-blur';
+
 import { SCREEN_WIDTH, SCREEN_HEIGHT, VERTICAL_GAP, HORIZONTAL_GAP } from '../../constats';
 
 const CONTAINER_WIDTH = 150;
 const CONTAINER_WIDTH_OPENED = 315;
 const CONTAINER_HEIGHT = 150;
-const CONTAINER_HEIGHT_OPENED = 400;
+const CONTAINER_HEIGHT_OPENED = 410;
 
 const airplaneIcon = import('./icons/aeroplane.png');
 
@@ -24,36 +26,42 @@ const ConnectionController = () => {
             title: 'Airplane Mode',
             icon: require('./icons/aeroplane.png'),
             active: false,
+            activeColor: '#007AFF',
             alwaysVisible: true
         },
         2: {
             title: 'Mobile Data',
             icon: require('./icons/mobile-data.png'),
             active: false,
+            activeColor: '#4CD964',
             alwaysVisible: true
         },
         3: {
             title: 'Wi-Fi',
             icon: require('./icons/wifi.png'),
             active: false,
+            activeColor: '#007AFF',
             alwaysVisible: true
         },
         4: {
             title: 'Bluetooth',
             icon: require('./icons/bluetooth.png'),
             active: false,
+            activeColor: '#007AFF',
             alwaysVisible: true
         },
         5: {
             title: 'Airdrop',
             icon: require('./icons/airdrop.png'),
             active: false,
+            activeColor: '#007AFF',
             alwaysVisible: false
         },
         6: {
             title: 'Personal Hotspot',
             icon: require('./icons/hotspot.png'),
             active: false,
+            activeColor: '#4CD964',
             alwaysVisible: false
         }
     });
@@ -104,26 +112,40 @@ const ConnectionController = () => {
     };
 
     const handleContainerPress = () => {
+        if (opened) return;
+
         Animated.timing(containerAnimation, {
-            toValue: opened ? 0 : 1,
+            toValue: 1,
             duration,
             easing
         }).start();
 
-        setOpened(!opened);
+        setOpened(true);
     };
+
+    // const handleOutsideContainerPress = () => {
+    //     // if (!opened) return;
+    //
+    //     Animated.timing(containerAnimation, {
+    //         toValue: 0,
+    //         duration,
+    //         easing
+    //     }).start();
+    //
+    //     setOpened(false);
+    // };
 
     return (
         <TouchableOpacity onPress={handleContainerPress} activeOpacity={1}>
             <Animated.View style={[styles.container, containerStyle]}>
-                <View style={styles.wrapper}>
+                <BlurView tint='dark' intensity={70} style={[styles.wrapper, opened && styles.openedWrapper]}>
                     { Object.entries(controllers).map(([key, controller]) => (
                         (controller.alwaysVisible || opened)
                         && (
-                            <Animated.View key={key} style={[styles.item]}>
+                            <Animated.View key={key} style={[styles.item, opened && styles.openedItem]}>
                                 <TouchableOpacity activeOpacity={1} onPress={() => handleItemPress(key)}>
-                                    <View style={[styles.icon, controller.active && styles.iconActive]}>
-                                        <Image source={controller.icon} />
+                                    <View style={[styles.icon, controller.active && {'backgroundColor': controller.activeColor}]}>
+                                        <ImageBackground resizeMode='center' source={controller.icon} style={styles.iconItem} />
                                     </View>
                                     { opened && <Text style={[styles.title]}>{controller.title}</Text> }
                                     { opened && <Text style={[styles.switcher]}>{controller.active ? 'On' : 'Off'}</Text> }
@@ -131,7 +153,7 @@ const ConnectionController = () => {
                             </Animated.View>
                         )
                     ))}
-                </View>
+                </BlurView>
             </Animated.View>
         </TouchableOpacity>
     )
@@ -139,20 +161,39 @@ const ConnectionController = () => {
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: 'yellow',
         justifyContent: 'center',
         alignItems:'center',
         width: CONTAINER_WIDTH,
         height: CONTAINER_HEIGHT,
-        borderRadius: 20
+        zIndex: 5
+    },
+    overlay: {
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        backgroundColor: 'red',
+        zIndex: 0
     },
     wrapper: {
+        flex: 1,
         flexDirection:'row',
         flexWrap: 'wrap',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingTop: 10,
+        borderRadius: 20,
+        overflow: 'hidden'
+    },
+    openedWrapper: {
+        paddingTop: 30
     },
     item: {
-        width: '50%',
-        padding: 10,
+        width: '45%',
+        marginBottom: 15
+    },
+    openedItem: {
+        width: '48%',
+        marginBottom: 30
     },
     icon: {
         justifyContent: 'center',
@@ -163,16 +204,20 @@ const styles = StyleSheet.create({
         backgroundColor: '#979797',
         borderRadius: 50,
     },
-    iconActive: {
-        backgroundColor: 'blue'
+    iconItem: {
+        width: '100%',
+        height: '100%',
+        flex: 1
     },
     title: {
         marginTop: 10,
         textAlign: 'center',
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        color: 'white'
     },
     switcher: {
-        textAlign: 'center'
+        textAlign: 'center',
+        color: 'white'
     }
 });
 
