@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, View, ImageBackground } from 'react-native';
 import { BlurView } from 'expo-blur';
 
@@ -7,26 +7,30 @@ import { HORIZONTAL_GAP, VERTICAL_GAP } from "./src/constats";
 import ConnectionController from "./src/components/connection-controller";
 import Player from "./src/components/player";
 
-const App = () => (
-    <ImageBackground
-        style={styles.background}
-        resizeMode='cover'
-        source={require('./wall-murals-shiba-inu-dog.jpg')}
-    >
-        <BlurView tint='light' intensity={50} style={styles.container}>
-            <View style={styles.content} >
-                <View style={styles.row}>
-                    <View style={styles.cell}>
-                        <ConnectionController />
-                    </View>
-                    <View style={styles.cell}>
-                        <Player />
+const App = () => {
+    const [opened, setOpened] = useState(false);
+
+    return (
+        <ImageBackground
+            style={styles.background}
+            resizeMode='cover'
+            source={require('./wall-murals-shiba-inu-dog.jpg')}
+        >
+            <BlurView tint='light' intensity={50} style={styles.container}>
+                <View style={styles.content} >
+                    <View style={styles.row}>
+                        <View style={styles.cell}>
+                            <ConnectionController opened={opened} setOpened={setOpened} />
+                        </View>
+                        <View style={styles.cell}>
+                            { !opened && <Player /> }
+                        </View>
                     </View>
                 </View>
-            </View>
-        </BlurView>
-    </ImageBackground>
-);
+            </BlurView>
+        </ImageBackground>
+    )
+};
 
 const styles = StyleSheet.create({
     container: {

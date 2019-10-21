@@ -9,9 +9,7 @@ const CONTAINER_WIDTH_OPENED = 315;
 const CONTAINER_HEIGHT = 150;
 const CONTAINER_HEIGHT_OPENED = 410;
 
-const ConnectionController = () => {
-    const [opened, setOpened] = useState(false);
-
+const ConnectionController = ({ opened, setOpened }) => {
     const [containerAnimation] = useState(new Animated.Value(0));
     const [overlayAnimation] = useState(new Animated.Value(0));
 
@@ -124,13 +122,13 @@ const ConnectionController = () => {
     const handleOutsideContainerPress = () => {
         if (!opened) return;
 
-        Animated.timing(overlayAnimation, {
+        Animated.timing(containerAnimation, {
             toValue: 0,
             duration,
             easing
         }).start();
 
-        Animated.timing(containerAnimation, {
+        Animated.timing(overlayAnimation, {
             toValue: 0,
             duration,
             easing
@@ -142,7 +140,7 @@ const ConnectionController = () => {
     return (
         <>
             <TouchableOpacity
-                style={[styles.overlay, { display: opened ? 'block' : 'none' }]}
+                style={styles.overlay}
                 onPress={handleOutsideContainerPress}
                 activeOpacity={1}
             >
@@ -151,7 +149,7 @@ const ConnectionController = () => {
                 </Animated.View>
             </TouchableOpacity>
             <TouchableOpacity style={styles.containerWrapper} onLongPress={handleContainerPress} activeOpacity={1} >
-                <Animated.View style={[styles.container, containerStyle]}>
+                <Animated.View style={[styles.container, containerStyle, { position: opened ? 'absolute' : 'static' }]}>
                     <BlurView tint='dark' intensity={70} style={[styles.wrapper, opened && styles.openedWrapper]}>
                         { Object.entries(controllers).map(([key, controller]) => (
                             (controller.alwaysVisible || opened)
@@ -176,8 +174,7 @@ const ConnectionController = () => {
 
 const styles = StyleSheet.create({
     containerWrapper: {
-        position: 'absolute',
-        zIndex: 1
+        position: 'absolute'
     },
     container: {
         justifyContent: 'center',
