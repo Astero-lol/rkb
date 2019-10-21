@@ -9,17 +9,12 @@ const CONTAINER_WIDTH_OPENED = 315;
 const CONTAINER_HEIGHT = 150;
 const CONTAINER_HEIGHT_OPENED = 410;
 
-const airplaneIcon = import('./icons/aeroplane.png');
-
 const ConnectionController = () => {
-    const [text, setText] = useState('lal');
     const [opened, setOpened] = useState(false);
-
     const [containerAnimation] = useState(new Animated.Value(0));
-    // const [itemAnimation] = useState(new Animated.Value(0));
 
-    const duration = 300;
-    const easing = Easing.bezier(.31,.8,.87,1.02)
+    const duration = 250;
+    const easing = Easing.bezier(.31,.8,.87,1.02);
 
     const [controllers, setControllers] = useState({
         1: {
@@ -66,12 +61,12 @@ const ConnectionController = () => {
         }
     });
 
-    const translateX = containerAnimation.interpolate({
+    const left = containerAnimation.interpolate({
         inputRange: [0, 1],
         outputRange: [0, (SCREEN_WIDTH - CONTAINER_WIDTH_OPENED - (HORIZONTAL_GAP * 2)) / 2]
     });
 
-    const translateY = containerAnimation.interpolate({
+    const top = containerAnimation.interpolate({
         inputRange: [0, 1],
         outputRange: [0, (SCREEN_HEIGHT - CONTAINER_HEIGHT_OPENED - (VERTICAL_GAP * 2)) / 2]
     });
@@ -86,18 +81,7 @@ const ConnectionController = () => {
         outputRange: [CONTAINER_WIDTH, CONTAINER_WIDTH_OPENED]
     });
 
-    // const scaleContainer = containerAnimation.interpolate({
-    //     inputRange: [0, 1],
-    //     outputRange: [1, 2]
-    // });
-    //
-    // const scaleItem = itemAnimation.interpolate({
-    //     inputRange: [0, 1],
-    //     outputRange: [1, 0.5]
-    // });
-
-    const containerStyle = [{ transform: [{ translateX }, { translateY }], height, width }];
-    // const itemStyle = [{ transform: [{ scale: scaleItem }] }];
+    const containerStyle = [{ top, left, height, width }];
 
     const handleItemPress = (value) => {
         const currentControllers = {
@@ -123,56 +107,71 @@ const ConnectionController = () => {
         setOpened(true);
     };
 
-    // const handleOutsideContainerPress = () => {
-    //     // if (!opened) return;
-    //
-    //     Animated.timing(containerAnimation, {
-    //         toValue: 0,
-    //         duration,
-    //         easing
-    //     }).start();
-    //
-    //     setOpened(false);
-    // };
+    const handleOutsideContainerPress = () => {
+        if (!opened) return;
+
+        Animated.timing(containerAnimation, {
+            toValue: 0,
+            duration,
+            easing
+        }).start();
+
+        setOpened(false);
+    };
 
     return (
-        <TouchableOpacity onPress={handleContainerPress} activeOpacity={1}>
-            <Animated.View style={[styles.container, containerStyle]}>
-                <BlurView tint='dark' intensity={70} style={[styles.wrapper, opened && styles.openedWrapper]}>
-                    { Object.entries(controllers).map(([key, controller]) => (
-                        (controller.alwaysVisible || opened)
-                        && (
-                            <Animated.View key={key} style={[styles.item, opened && styles.openedItem]}>
-                                <TouchableOpacity activeOpacity={1} onPress={() => handleItemPress(key)}>
-                                    <View style={[styles.icon, controller.active && {'backgroundColor': controller.activeColor}]}>
-                                        <ImageBackground resizeMode='center' source={controller.icon} style={styles.iconItem} />
-                                    </View>
-                                    { opened && <Text style={[styles.title]}>{controller.title}</Text> }
-                                    { opened && <Text style={[styles.switcher]}>{controller.active ? 'On' : 'Off'}</Text> }
-                                </TouchableOpacity>
-                            </Animated.View>
-                        )
-                    ))}
-                </BlurView>
-            </Animated.View>
-        </TouchableOpacity>
+        <>
+            <TouchableOpacity
+                style={[styles.overlay, { display: opened ? 'block' : 'none' }]}
+                onPress={handleOutsideContainerPress}
+                activeOpacity={1}
+            >
+                <BlurView tint='dark' intensity={90} style={styles.overlayBlur} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.containerWrapper} onLongPress={handleContainerPress} activeOpacity={1} >
+                <Animated.View style={[styles.container, containerStyle]}>
+                    <BlurView tint='dark' intensity={70} style={[styles.wrapper, opened && styles.openedWrapper]}>
+                        { Object.entries(controllers).map(([key, controller]) => (
+                            (controller.alwaysVisible || opened)
+                            && (
+                                <Animated.View key={key} style={[styles.item, opened && styles.openedItem]}>
+                                    <TouchableOpacity activeOpacity={1} onPress={() => handleItemPress(key)}>
+                                        <View style={[styles.icon, controller.active && {'backgroundColor': controller.activeColor}]}>
+                                            <ImageBackground resizeMode='center' source={controller.icon} style={styles.iconItem} />
+                                        </View>
+                                        { opened && <Text style={[styles.title]}>{controller.title}</Text> }
+                                        { opened && <Text style={[styles.switcher]}>{controller.active ? 'On' : 'Off'}</Text> }
+                                    </TouchableOpacity>
+                                </Animated.View>
+                            )
+                        ))}
+                    </BlurView>
+                </Animated.View>
+            </TouchableOpacity>
+        </>
     )
 };
 
 const styles = StyleSheet.create({
+    containerWrapper: {
+        position: 'absolute',
+        zIndex: 1
+    },
     container: {
         justifyContent: 'center',
         alignItems:'center',
         width: CONTAINER_WIDTH,
         height: CONTAINER_HEIGHT,
-        zIndex: 5
     },
     overlay: {
         position: 'absolute',
-        width: '100%',
-        height: '100%',
-        backgroundColor: 'red',
-        zIndex: 0
+        left: HORIZONTAL_GAP * -1,
+        top: VERTICAL_GAP * -1,
+        width: SCREEN_WIDTH,
+        height: SCREEN_HEIGHT
+    },
+    overlayBlur: {
+        flex: 1,
     },
     wrapper: {
         flex: 1,
@@ -213,11 +212,13 @@ const styles = StyleSheet.create({
         marginTop: 10,
         textAlign: 'center',
         fontWeight: 'bold',
-        color: 'white'
+        color: 'white',
+        fontSize: 12
     },
     switcher: {
         textAlign: 'center',
-        color: 'white'
+        color: 'white',
+        fontSize: 12
     }
 });
 
