@@ -11,7 +11,9 @@ const CONTAINER_HEIGHT_OPENED = 410;
 
 const ConnectionController = () => {
     const [opened, setOpened] = useState(false);
+
     const [containerAnimation] = useState(new Animated.Value(0));
+    const [overlayAnimation] = useState(new Animated.Value(0));
 
     const duration = 250;
     const easing = Easing.bezier(.31,.8,.87,1.02);
@@ -81,7 +83,13 @@ const ConnectionController = () => {
         outputRange: [CONTAINER_WIDTH, CONTAINER_WIDTH_OPENED]
     });
 
+    const opacity = overlayAnimation.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0, 1]
+    });
+
     const containerStyle = [{ top, left, height, width }];
+    const overlayStyles = [{ opacity }];
 
     const handleItemPress = (value) => {
         const currentControllers = {
@@ -104,11 +112,23 @@ const ConnectionController = () => {
             easing
         }).start();
 
+        Animated.timing(overlayAnimation, {
+            toValue: 1,
+            duration,
+            easing
+        }).start();
+
         setOpened(true);
     };
 
     const handleOutsideContainerPress = () => {
         if (!opened) return;
+
+        Animated.timing(overlayAnimation, {
+            toValue: 0,
+            duration,
+            easing
+        }).start();
 
         Animated.timing(containerAnimation, {
             toValue: 0,
@@ -126,7 +146,9 @@ const ConnectionController = () => {
                 onPress={handleOutsideContainerPress}
                 activeOpacity={1}
             >
-                <BlurView tint='dark' intensity={90} style={styles.overlayBlur} />
+                <Animated.View style={[styles.overlayAnimate, overlayStyles]}>
+                    <BlurView tint='dark' intensity={90} style={styles.overlayBlur} />
+                </Animated.View>
             </TouchableOpacity>
             <TouchableOpacity style={styles.containerWrapper} onLongPress={handleContainerPress} activeOpacity={1} >
                 <Animated.View style={[styles.container, containerStyle]}>
@@ -171,7 +193,10 @@ const styles = StyleSheet.create({
         height: SCREEN_HEIGHT
     },
     overlayBlur: {
-        flex: 1,
+        flex: 1
+    },
+    overlayAnimate: {
+        flex: 1
     },
     wrapper: {
         flex: 1,
